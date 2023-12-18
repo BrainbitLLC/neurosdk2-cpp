@@ -2,7 +2,7 @@
 
 ## Overview
 
-Neurosdk is a powerful tool for working with neuro-sensors BrainBit, BrainBitBlack, Callibri and Kolibri. All these devices work with BLE 4.0+ technology. SDK is available for the following platforms: Android (Java, Kotlin), iOS/MacOS (Objective-C, Swift), Windows (c++, c#, python), ReactNative (Android, iOS), Unity (Android, iOS, Windows, MacOS), Xamarin (Android, iOS, UWP). SDK allows you to connect, read the parameters of devices, as well as receive signals of various types from the selected device. 
+Neurosdk is a powerful tool for working with neuro-sensors BrainBit, BrainBitBlack, Callibri and Kolibri. All these devices work with BLE 4.0+ technology. SDK allows you to connect, read the parameters of devices, as well as receive signals of various types from the selected device. 
 
 ## Getting Started
 
@@ -113,12 +113,16 @@ sensorsScanner(scanner, sensors, &szSensorsInOut, &outStatus);
 ```
 
 `SensorInfo` contains information about device:
- - Name - the name of device
- - Address - MAC address of device (UUID for iOS/MacOS)
- - Serial number - device's serial number
- - Sensor family - type of device
- - Sensor model - numerical value of the device model
- - Pairing requared - whether the device needs to be paired or not
+
+| Field | Type | Description |
+|--|--|--|
+|SensFamily|SensorFamily|type of device|
+|SensModel|uint8_t|numerical value of the device model|
+|Name|char[SENSOR_NAME_LEN]|the name of device|
+|Address|char [SENSOR_ADR_LEN]|MAC address of device (UUID for iOS/MacOS)|
+|SerialNumber|char [SENSOR_SN_LEN]|device's serial number|
+|PairingRequired|uint8_t|whether the device needs to be paired or not|
+|RSSI|int16_t|current signal strength in dBm. The valid range is [-127, 126]|
 
 5. After you finish working with the scanner, you need to clean up the resources used. 
 
@@ -126,10 +130,6 @@ sensorsScanner(scanner, sensors, &szSensorsInOut, &outStatus);
 ```cpp
 freeScanner(scanner);
 ```
-
-> Important!
-> When restarting the search, the callback will only be called when a new device is found. If you need to get all devices found by the current scanner instance, call the appropriate method.
-
 
 ### Sensor
 
@@ -506,14 +506,14 @@ The BrainBit and BrainBitBlack is a headband with 4 electrodes and 4 data channe
 
 ###### C#
 ```csharp
-sensor.Gain = SensorGain.SensorGain1; // <- This throw an exeption!
+auto sensorGain = SensorGain::SensorGain6;
+OpStatus outStatus;
+writeGainSensor(sensor, sensorGain, &outStatus); // <- this is throw an exception!
 ```
 
 >  You can distinguish BrainBit device from Flex by the firmware version number: if the `SensorVersion.FwMajor` is more than 100 - it's Flex, if it's less than BrainBit.
 
 > BrainBitBlack, unlike BrainBit, requires pairing with a PC/mobile device. So, before connecting to the BBB, you must put it into pairing mode. SDK starts the pairing process automatically. 
-
-
 
 #### Receiving signal
 
