@@ -37,18 +37,6 @@ enum SensorFamily : uint8_t
 	SensorLEKolibri = 2,
 	SensorLEBrainBit = 3,
 	SensorLEBrainBitBlack = 4,
-
-
-	SensorLESmartLeg = 7,
-	SensorLENeurro = 8,
-	SensorLEP300 = 9,
-	SensorLEImpulse = 10,
-
-	SensorLEEarBuds = 12,
-
-
-
-
 };
 
 typedef struct _SensorVersion {
