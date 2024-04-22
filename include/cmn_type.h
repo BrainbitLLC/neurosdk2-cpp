@@ -23,6 +23,12 @@
 
 
 
+#ifndef BRAINBIT2_MAX_CH_COUNT
+#define BRAINBIT2_MAX_CH_COUNT 8
+#endif // !BRAINBIT2_MAX_CH_COUNT
+
+
+
 typedef struct _OpStatus
 {
 	uint8_t Success;
@@ -37,6 +43,10 @@ enum SensorFamily : uint8_t
 	SensorLEKolibri = 2,
 	SensorLEBrainBit = 3,
 	SensorLEBrainBitBlack = 4,
+	SensorLEBrainBit2 = 18,
+	SensorLEBrainBitPro = 19,
+	SensorLEBrainBitFlex = 20,
+
 };
 
 typedef struct _SensorVersion {
@@ -118,7 +128,9 @@ enum SensorCommand : int8_t
 	CommandFileSystemDisable,
 	CommandFileSystemStreamClose,
 	CommandStartCalibrateSignal,
-	CommandStopCalibrateSignal
+	CommandStopCalibrateSignal,
+	CommandPhotoStimEnable,
+	CommandPhotoStimDisable
 };
 
 enum SensorParameter : int8_t {
@@ -162,13 +174,20 @@ enum SensorParameter : int8_t {
 	ParameterReferentsGround,
 	ParameterSamplingFrequencyEnvelope,
 	ParameterChannelConfiguration,
-	ParameterElectrodeState
+	ParameterElectrodeState,
+	ParameterChannelResistConfiguration,
+	ParameterBattVoltage,
+	ParameterPhotoStimTimeDefer,
+	ParameterPhotoStimSyncState,
+	ParameterSensorPhotoStim,
+	ParameterPhotoStimMode
 };
 
 enum SensorParamAccess : int8_t {
 	ParamAccessRead,
 	ParamAccessReadWrite,
-	ParamAccessReadNotify
+	ParamAccessReadNotify,
+	ParamAccessWrite
 };
 
 typedef struct _ParameterInfo {
@@ -192,6 +211,13 @@ enum SensorSamplingFrequency : int8_t {
 	FrequencyHz2000,
 	FrequencyHz4000,
 	FrequencyHz8000,
+	FrequencyHz10000,
+	FrequencyHz12000,
+	FrequencyHz16000,
+	FrequencyHz24000,
+	FrequencyHz32000,
+	FrequencyHz48000,
+	FrequencyHz64000,
 	FrequencyUnsupported
 };
 
@@ -303,6 +329,16 @@ enum RedAmplitude : uint8_t {
 	RedAmpUnsupported = 0xFF
 };
 
+enum GenCurrent : uint8_t {
+	GenCurr0nA = 0,
+	GenCurr6nA = 1,
+	GenCurr12nA = 2,
+	GenCurr18nA = 3,
+	GenCurr24nA = 4,
+	GenCurr6uA = 5,
+	GenCurr24uA = 6,
+	Unsupported = 0xFF
+};
 
 
 
@@ -359,6 +395,77 @@ typedef struct _MEMSData {
 } MEMSData;
 
 typedef void* MEMSDataListenerHandle;
+
+enum EEGChannelType : uint8_t
+{
+	EEGChTypeSingleA1,
+	EEGChTypeSingleA2,
+	EEGChTypeDifferential,
+	EEGChTypeRef
+};
+
+enum EEGChannelId : uint8_t
+{
+	EEGChIdUnknown,
+	EEGChIdO1,
+	EEGChIdP3,
+	EEGChIdC3,
+	EEGChIdF3,
+	EEGChIdFp1,
+	EEGChIdT5,
+	EEGChIdT3,
+	EEGChIdF7,
+
+	EEGChIdF8,
+	EEGChIdT4,
+	EEGChIdT6,
+	EEGChIdFp2,
+	EEGChIdF4,
+	EEGChIdC4,
+	EEGChIdP4,
+	EEGChIdO2,
+
+	EEGChIdD1,
+	EEGChIdD2,
+	EEGChIdOZ,
+	EEGChIdPZ,
+	EEGChIdCZ,
+	EEGChIdFZ,
+	EEGChIdFpZ,
+	EEGChIdD3
+};
+
+typedef struct _EEGChannelInfo
+{
+	EEGChannelId Id;
+	EEGChannelType ChType;
+	char Name[SENSOR_CHANNEL_NAME_LEN];
+	uint8_t Num;
+} EEGChannelInfo;
+
+enum EEGChannelMode : uint8_t {
+	EEGChModeOff,
+	EEGChModeShorted,
+	EEGChModeSignalResist,
+	EEGChModeSignal,
+	EEGChModeTest
+};
+
+
+typedef struct _SignalChannelsData {
+	uint32_t PackNum;
+	uint8_t Marker;
+	uint32_t SzSamples;
+	double* Samples;
+} SignalChannelsData;
+
+typedef struct _ResistRefChannelsData {
+	uint32_t PackNum;
+	uint32_t SzSamples;
+	uint32_t SzReferents;
+	double* Samples;
+	double* Referents;
+} ResistRefChannelsData;
 
 
 
@@ -471,7 +578,8 @@ enum SignalTypeCallibri : uint8_t
 	CallibriSignalTypeEDA = 3,// GSR
 	CallibriSignalTypeStrainGaugeBreathing = 4,
 	CallibriSignalTypeImpedanceBreathing = 5,
-	CallibriSignalTypeUnknown = 6
+	CallibriSignalTypeTenzoBreathing = 6,
+	CallibriSignalTypeUnknown = 7
 };
 
 typedef void* CallibriSignalDataListenerHandle;
@@ -481,12 +589,28 @@ typedef void* CallibriEnvelopeDataListenerHandle;
 typedef void* QuaternionDataListenerHandle;
 
 
+enum BrainBit2ChannelMode : int8_t {
+	ChModeShort,
+	ChModeNormal
+};
+typedef	struct _BrainBit2AmplifierParam {
+	BrainBit2ChannelMode ChSignalMode[BRAINBIT2_MAX_CH_COUNT];
+	uint8_t ChResistUse[BRAINBIT2_MAX_CH_COUNT];
+	SensorGain ChGain[BRAINBIT2_MAX_CH_COUNT];
+	GenCurrent Current;
+} BrainBit2AmplifierParam;
+
+typedef void* BrainBit2SignalDataListenerHandle;
+typedef void* BrainBit2ResistDataListenerHandle;
+
+
 
 typedef struct _SensorScanner SensorScanner;
 typedef struct _Sensor Sensor;
 
 typedef void* SensorsListenerHandle;
 typedef void* BattPowerListenerHandle;
+typedef void* BattVoltageListenerHandle;
 typedef void* SensorStateListenerHandle;
 
 

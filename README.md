@@ -63,7 +63,6 @@ The scanner works like this:
 1. Create scanner. 
 When creating a scanner, you need to specify the type of device to search. It can be either one device or several. Here is example for two type of devices - BrainBit and Callibri.
 
-###### C++
 ```cpp
 SensorFamily filter[] = {
 			    SensorFamily::SensorLEBrainBit,
@@ -74,7 +73,6 @@ auto scanner = createScanner(filter, sizeof(filter), &st);
 ```
 2. During the search, you can get a list of found devices using a callback. To do this, you need to subscribe to receive the event, and unsubscribe after the search is completed:
 
-###### C++
 ```cpp
 void sensorsCallback(SensorScanner* ptr, SensorInfo* sensors, int32_t szSensors, void* userData){
     
@@ -86,7 +84,7 @@ addSensorsCallbackScanner(scanner, sensorsCallback, &lHandle, nullptr, &st);
 ```
 
 3. Start search
-###### C++
+
 ```cpp
 OpStatus outStatus;
 
@@ -95,7 +93,6 @@ startScanner(scanner, &outStatus);
 
 3. Stop search
 
-###### C++
 ```cpp
 OpStatus outStatus;
 
@@ -104,7 +101,6 @@ stopScanner(scanner, &outStatus);
 
 4. Additionally, a list of found devices can be obtained using a separate method.
 
-###### C++
 ```cpp
 int32_t szSensorsInOut = 32;
 SensorInfo* sensors = new SensorInfo[szSensorsInOut];
@@ -126,7 +122,6 @@ sensorsScanner(scanner, sensors, &szSensorsInOut, &outStatus);
 
 5. After you finish working with the scanner, you need to clean up the resources used. 
 
-###### C++
 ```cpp
 freeScanner(scanner);
 ```
@@ -137,7 +132,6 @@ freeScanner(scanner);
 
 You need to create a device using a scanner. All manipulations with the device will be performed without errors only if the device is connected.
 
-###### C++
 ```cpp
 OpStatus outStatus;
 SensorInfo sensorInfo;
@@ -154,7 +148,6 @@ Connection status can be obtained in two ways. The first one is using the sensor
 
 The second way is in real time using a callback:
 
-###### C++
 ```cpp
 void onConnectionStateCallback(Sensor* sensor, SensorState State, void* userInfo)
 {
@@ -173,7 +166,6 @@ A connection can be in two states: connected (InRange) and disconnected (OutOfRa
 
 You can connect and disconnect from device manually by methods `Connect()` and `Disconnect()`. To receive connection state in real time you need to subscribe to `stateChanged` event. Also you can get connection state by sensor's property.
 
-###### C++
 ```cpp
 OpStatus outStatus;
 connectSensor(sensor, &outStatus);
@@ -189,7 +181,6 @@ disconnectSensor(sensor, &outStatus);
 
 Also, you can get power value from each device by sensor property `BattPower` or by callback in real time:
 
-###### C++
 ```cpp
 void onBatteryCallback(Sensor* sensor, int32_t battery, void* userData)
 {
@@ -207,7 +198,7 @@ Each device has its own settings, and some of them can be configured as you need
 
 First you need to find out what parameters the device supports and whether they can be changed:
 
-###### C++
+
 ```cpp
 int32_t szSensorParametersInOut = getParametersCountSensor(sensor);
 ParameterInfo sensor_parameter[szSensorParametersInOut];
@@ -224,7 +215,7 @@ Info about parameter includes two fields:
 
 You can also check if the parameter is supported, for example `Gain`:
 
-###### C++
+
 ```cpp
 if(isSupportedParameterSensor(sensor, SensorParameter::ParameterGain)){
     ...
@@ -461,7 +452,6 @@ Frequency of updating breath values. Неизмениемое значение. 
 
 Each device has a specific set of modules. You can find out which modules the device has using the property `Feature`:
 
-###### C++
 ```cpp
 int32_t szSensorFeatureInOut = getFeaturesCountSensor(sensor);
 SensorFeature features[szSensorFeatureInOut];
@@ -471,7 +461,6 @@ getFeaturesSensor(sensor, features, &szSensorFeatureInOut, &outStatus);
 
 You can also check if the feature is supported, for example `Signal`:
 
-###### C++
 ```cpp
 if(isSupportedFeatureSensor(sensor, SensorFeature::FeatureSignal)){
 
@@ -482,7 +471,6 @@ if(isSupportedFeatureSensor(sensor, SensorFeature::FeatureSignal)){
 
 The device can execute certain commands. The list of supported commands can be obtained as follows:
 
-###### C++
 ```cpp
 auto* sensor = reinterpret_cast<Sensor*>(sensor_ptr);
 int32_t szSensorCommandsInOut = getCommandsCountSensor(sensor);
@@ -493,7 +481,6 @@ getCommandsSensor(sensor, commands, &szSensorCommandsInOut, &outStatus);
 
 And also check if the device can execute the desired command:
 
-###### C++
 ```cpp
 if(isSupportedCommandSensor(sensor, SensorCommand::CommandStartSignal)){
 
@@ -519,7 +506,6 @@ writeGainSensor(sensor, sensorGain, &outStatus); // <- this is throw an exceptio
 
 To receive signal data, you need to subscribe to the corresponding callback. The values will be received as a packet from four channels at once, which will avoid desynchronization between them. The values come in volts. In order for the device to start transmitting data, you need to start a signal using the `execute` command. This method is also recommended to be run in an separate thread.
 
-###### C++
 ```cpp
 void onBrainBitSignalDataReceived(Sensor *pSensor, BrainBitSignalData *pData, int32_t size, void *userData)
 {
@@ -548,7 +534,7 @@ Some devices support signal quality check functions using signal ping. You can s
 
 > Available only to BrainBitBlack
 
-###### C++
+
 ```cpp
 OpStatus outStatus;
 pingNeuroSmart(sensor, 5, &outStatus);
@@ -560,7 +546,7 @@ BrainBit and BrainBitBlack also allow you to get resistance values. With their h
 
 For BrainBit the upper limit of resistance is 2.5 ohms.
 
-###### C++
+
 ```cpp
 void onBrainBitBlackResistDataReceived(Sensor *pSensor, BrainBitResistData data, void *pVoid)
 {
@@ -581,6 +567,176 @@ You get resistance values structure of samples for each channel:
  - T3 - value of T3 channel in Ohm
  - T4 - value of T4 channel in Ohm
 
+### BrainBit 2/Flex/Pro
+
+The BrainBit2 class is designed to work with several device families: BrainBit 2, BrainBit Pro, BrainBit Flex, BrainBit Flex Pro. All devices have a sampling frequency of 250Hz. All devices can work in two modes - signal and resistance separately. These devices have different number of channels - BrainBit2, BrainBit Flex have 4 channels each and BrainBitPro, BrainBit FlexPro have 8 channels each. The main difference from BraibBit of the first version is that they do not support gain property, but have the ability to set gain for each channel separately using `BrainBit2AmplifierParam` structure. Also, these types of devices support the [ping command](#ping-signal).
+
+#### Info about channels
+
+The device can have 4 or 8 channels. The number of channels can be determined as follows:
+
+```cpp
+EEGChannelInfo channelInfs[BRAINBIT2_MAX_CH_COUNT];
+int32_t chCnt = BRAINBIT2_MAX_CH_COUNT;
+OpStatus st;
+readSupportedChannelsBrainBit2(sensor, channelInfs, &chCnt, &st);
+```
+
+`EEGChannelInfo` contains some info:
+
+| Field | Type | Description |
+|--|--|--|
+|Id|EEGChannelId|physical location of the channel. You will receive the values `O1`, `O2`, `T3`, `T4` or `Unknown`. `Unknown` means that the position of a specific electrode is free.|
+|ChType|EEGChannelType|type of channel, possible values `A1`, `A2`, `Differential` or `Referent`|
+|Name|char[SENSOR_CHANNEL_NAME_LEN]|channel name|
+|Num|uint8_t|channel number. By this number the channel will be located in the array of signal or resistance values|
+
+Also you can check only channels count without info:
+
+```cpp
+int32_t chCount = getChannelsCountSensor(sensor);
+```
+
+#### AmpMode
+
+This device can show it's current amplifier mode. It can be in the following states:
+
+  - Invalid
+  - PowerDown
+  - Idle
+  - Signal
+  - Resist
+
+You can check amp. mode by two ways:
+
+1. by callback:
+
+```cpp
+void ampModeStateChanged(Sensor* ptr, SensorAmpMode mode, void* userData)
+{
+	// check AmpMode
+}
+...
+AmpModeListenerHandle ampModeHandle = nullptr;
+OpStatus st;
+addAmpModeCallback(sensor, ampModeStateChanged, &ampModeHandle, nullptr, &st);
+...
+removeAmpModeCallback(ampModeHandle);
+```
+
+2. get value at any time:
+
+```cpp
+SensorAmpMode ampMode;
+OpStatus st;
+readAmpMode(sensor, &ampMode, &st);
+```
+
+It is very important parameter for BrainBit2 device because you can set amplifier parameters only if device into `PowerDown` or `Idle` mode.
+
+#### Amplifier parameters
+
+You can configure each channel and whole device settings by setting amplifier parameters.
+
+```cpp
+BrainBit2AmplifierParam ampParam;
+OpStatus st;
+readAmplifierParamBrainBit2(sensor, &ampParam, &st);
+for (int32_t i = 0; i < chCnt; ++i) {
+    ampParam.ChSignalMode[i] = BrainBit2ChannelMode::ChModeNormal;
+	ampParam.ChGain[i] = SensorGain::SensorGain6;
+    ampParam.ChResistUse[i] = 1;
+}
+ampParam.Current = GenCurrent::GenCurr6nA;
+writeAmplifierParamBrainBit2(sensor, ampParam, &st);
+```
+
+`BrainBit2AmplifierParam` contains:
+
+| Field | Type | Description |
+|--|--|--|
+|ChSignalMode|BrainBit2ChannelMode[BRAINBIT2_MAX_CH_COUNT]|input type|
+|ChResistUse|uint8_t[BRAINBIT2_MAX_CH_COUNT]|is use for resistance|
+|ChGain|SensorGain[BRAINBIT2_MAX_CH_COUNT]|gain of an ADC signal for each channel|
+|Current|GenCurrent|setting parameters of the probe current generator|
+
+Possible values for `Current`:
+ - 0nA 
+ - 6nA 
+ - 12nA
+ - 18nA
+ - 24nA
+
+Signal modes:
+ - Short - shorted input
+ - Normal - bipolar input mode (used for EEG)
+
+Possible `Gain` values:
+ - 1
+ - 2
+ - 3
+ - 4
+ - 6
+ - 8
+ - 12
+
+#### Receiving signal
+
+To receive signal data, you need to subscribe to the corresponding callback. The values come in volts. In order for the device to start transmitting data, you need to start a signal using the `execute` command. This method is also recommended to be run in an separate thread.
+
+```cpp
+void signalBrainBit2Callback(Sensor* ptr, SignalChannelsData* data, int32_t szData, void* userData)
+{
+	// process data
+}
+...
+BrainBit2SignalDataListenerHandle signalHandle = nullptr;
+OpStatus st;
+addSignalCallbackBrainBit2(sensor, signalBrainBit2Callback, &signalHandle, nullptr, &st);
+execCommandSensor(sensor, SensorCommand::CommandStartSignal, &st);
+...
+removeSignalCallbackBrainBit2(signalHandle);
+execCommandSensor(sensor, SensorCommand::CommandStopSignal, &st);
+```
+
+You get signal values as a list of samples, each containing:
+
+| Field | Type | Description |
+|--|--|--|
+|PackNum|uint32_t|number for each packet|
+|Marker|uint8_t|marker of sample|
+|SzSamples|uint32_t|samples count|
+|Samples|double*|array of samples in V. Each sample number into array consistent with `Num` value of [EEGChannelInfo](#info-about-channels) from `getSupportedChannels()` method.|
+
+#### Receiving resistance
+
+BrainBit2 also allow you to get resistance values. With their help, you can determine the quality of the electrodes to the skin. Initial resistance values are infinity. The values change when the device is on the head.
+
+```cpp
+void resistBrainBit2Callback(Sensor* ptr, ResistRefChannelsData* data, int32_t szData, void* userData)
+{
+	// process resistance
+}
+...
+BrainBit2ResistDataListenerHandle resistHandle = nullptr;
+OpStatus st;
+addResistCallbackBrainBit2(sensor, resistBrainBit2Callback, &resistHandle, nullptr, &st);
+execCommandSensor(sensor, SensorCommand::CommandStartResist, &st);
+...
+removeResistCallbackBrainBit2(resistHandle);
+execCommandSensor(sensor, SensorCommand::CommandStopResist, &st);
+```
+
+You get resistance values structure of samples (`ResistRefChannelsData`) for each channel:
+
+| Field | Type | Description |
+|--|--|--|
+|PackNum|uint32_t|number for each packet|
+|SzSamples|uint32_t|samples count|
+|SzReferents|uint32_t|referents count|
+|Samples|double*|array of samples in V. Each sample number into array consistent with `Num` value of [EEGChannelInfo](#info-about-channels) from `SupportedChannels` property.|
+|Referents|double*|array of values for referents channels. For BrainBit2 sensor is empty now.|
+
 ### Signal Callibri, Kolibri
 
 The Callibri family of devices has a wide range of built-in modules. For each of these modules, the SDK contains its own processing area. It is recommended before using any of the modules to check if the module is supported by the device using one of the methods `IsSupportedFeature`, `IsSupportedCommand` or `IsSupportedParameter`
@@ -591,7 +747,7 @@ To receive signal data, you need to subscribe to the corresponding callback. The
 
 The sampling rate can be controlled using the `SamplingFrequency` property. For example, at a frequency of 1000 Hz, the device will send 1000 samples per second. Supports frequencies 125/250/500/1000/2000 Hz. You can also adjust the signal offset (`DataOffset`) and signal power (`Gain`).
 
-###### C++
+
 ```cpp
 void onCallibriSignalDataReceived(Sensor* sensor, CallibriSignalData* data, int32_t size, void* sensor_jobj)
 {
@@ -631,7 +787,7 @@ Hardware filters disabled by default for all signal types. You can enable filter
 
 To get the values of the envelope, you need to subscribe to a specific event and start pickup. The channel must be configured in the same way as for a normal signal, and all parameters work the same way. Then the signal is filtered and decimated at 20 Hz.
 
-###### C++
+
 ```cpp
 void onCallibriEnvelopeDataReceived(Sensor* sensor, CallibriEnvelopeData* data, int32_t size, void* sensor_jobj)
 {
@@ -659,7 +815,7 @@ Allows you to determine the presence of electrical contact of the device electro
  
 To receive data, you need to subscribe to the corresponding callback and start signal pickup.
 
-###### C++
+
 ```cpp
 void onCallibriElectrodeStateChanged(Sensor* sensor, CallibriElectrodeState state, void* userData)
 {
@@ -682,7 +838,7 @@ You get signal values as a list of samples, each containing:
 
 The breathing microcircuit is optional on request. Its presence can be checked using the `IsSupportedFeature` method. To receive data, you need to connect to the device, subscribe to the notification of data receipt and start picking up.
 
-###### C++
+
 ```cpp
 void onCallibriRespirationDataReceived(Sensor* sensor, CallibriRespirationData *pData, int32_t size, void* userData)
 {
@@ -732,7 +888,7 @@ It is recommended to perform calibration on a flat, horizontal non-vibrating sur
 
 > MEMS and quaternion available only to signal Callibri/Kolibri!
 
-###### C++
+
 ```cpp
 void onMEMSDataCallbackCallibri(Sensor* sensor, MEMSData* data, int32_t size, void* userData){
 
@@ -775,7 +931,7 @@ Represents a motion counter. It can be configured using the `CallibriMotionCount
 
 You can find out the current number of movements using the `MotionCounterCallibri` property. You can reset the counter with the `ResetMotionCounter` command. No additional commands are needed to start the counter, it will be incremented all the time until the reset command is executed.
 
-###### C++
+
 ```cpp
 if(isSupportedParameterSensor(sensor, SensorParameter::ParameterMotionCounter)){
     OpStatus outStatus;
@@ -789,7 +945,7 @@ if(isSupportedParameterSensor(sensor, SensorParameter::ParameterMotionCounter)){
 
 Kallibri is a EMS if it supports the stimulation module:
 
-###### C++
+
 ```cpp
 bool isStimulator = isSupportedFeatureSensor(sensor, SensorFeature::FeatureCurrentStimulator);
 ```
@@ -805,7 +961,7 @@ Before starting the session, you need to correctly configure the device, otherwi
 
 You can start and stop stimulation with the following commands:
 
-###### C++
+
 ```cpp
 execCommandSensor(sensor, SensorCommand::CommandStartCurrentStimulation, &outStatus);
 ...
@@ -839,7 +995,6 @@ Motion corrector parameters are a structure with fields:
  - Limb - overlay location in stimulation mode, if supported.
  - MinPauseMs - Pause between starts of stimulation mode in milliseconds. Multiple of 10. This means that the device is using the (MinPauseMs / 10) value. Correct values: 10, 20, 30, 40 ... 
 
-###### C++
 ```cpp
 OpStatus outStatus;
 CallibriMotionAssistantParams callibriMotionAssistantParams;

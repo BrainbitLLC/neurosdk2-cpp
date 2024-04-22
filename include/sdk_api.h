@@ -48,15 +48,17 @@ extern "C"
 	SDK_SHARED uint8_t readSerialNumberSensor(Sensor* ptr, char* serialNumberOut, int32_t szSerialNumberIn, OpStatus* outStatus);
 	SDK_SHARED uint8_t writeSerialNumberSensor(Sensor* ptr, char* serialNumber, int32_t szSerialNumber, OpStatus* outStatus);
 	SDK_SHARED uint8_t readBattPowerSensor(Sensor* ptr, int32_t* battPowerOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readBattVoltageSensor(Sensor* ptr, int32_t* battVoltageOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t readSamplingFrequencySensor(Sensor* ptr, SensorSamplingFrequency* samplingFrequencyOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t readGainSensor(Sensor* ptr, SensorGain* gainOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeGainSensor(Sensor* ptr, SensorGain gain, OpStatus* outStatus);
+
 	SDK_SHARED uint8_t readDataOffsetSensor(Sensor* ptr, SensorDataOffset* dataOffsetOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t readFirmwareModeSensor(Sensor* ptr, SensorFirmwareMode* modeOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t readVersionSensor(Sensor* ptr, SensorVersion* versionOut, OpStatus* outStatus);
 
 	SDK_SHARED uint8_t readHardwareFiltersSensor(Sensor* ptr, SensorFilter* filtersOut, int32_t* szFiltersInOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t writeHardwareFiltersSensor(Sensor* ptr, SensorFilter* filters, int32_t szFilters, OpStatus* outStatus);
-	SDK_SHARED uint8_t writeGainSensor(Sensor* ptr, SensorGain gain, OpStatus* outStatus);
 	SDK_SHARED uint8_t readExternalSwitchSensor(Sensor* ptr, SensorExternalSwitchInput* extSwInputOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t writeExternalSwitchSensor(Sensor* ptr, SensorExternalSwitchInput extSwInput, OpStatus* outStatus);
 	SDK_SHARED uint8_t readColorCallibri(Sensor* ptr, CallibriColorType* callibriColorOut, OpStatus* outStatus);
@@ -112,9 +114,19 @@ extern "C"
 	SDK_SHARED uint8_t addAmpModeCallback(Sensor* ptr, void(*callback)(Sensor* ptr, SensorAmpMode mode, void* userData), AmpModeListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeAmpModeCallback(AmpModeListenerHandle handle);
 
+	SDK_SHARED uint8_t readSupportedChannelsBrainBit2(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szchannelsInOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t addSignalCallbackBrainBit2(Sensor* ptr, void(*callback)(Sensor* ptr, SignalChannelsData* data, int32_t szData, void* userData), BrainBit2SignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalCallbackBrainBit2(BrainBit2SignalDataListenerHandle handle);
+	SDK_SHARED uint8_t addResistCallbackBrainBit2(Sensor* ptr, void(*callback)(Sensor* ptr, ResistRefChannelsData* data, int32_t szData, void* userData), BrainBit2ResistDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeResistCallbackBrainBit2(BrainBit2ResistDataListenerHandle handle);
+	SDK_SHARED uint8_t readAmplifierParamBrainBit2(Sensor* ptr, BrainBit2AmplifierParam* ampParamOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeAmplifierParamBrainBit2(Sensor* ptr, BrainBit2AmplifierParam ampParam, OpStatus* outStatus);
+
 
 	SDK_SHARED uint8_t addBatteryCallback(Sensor* ptr, void(*callback)(Sensor* ptr, int32_t battPower, void* userData), BattPowerListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeBatteryCallback(BattPowerListenerHandle handle);
+	SDK_SHARED uint8_t addBatteryVoltageCallback(Sensor* ptr, void(*callback)(Sensor* ptr, int32_t battVoltage, void* userData), BattVoltageListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeBatteryVoltageCallback(BattVoltageListenerHandle handle);
 	SDK_SHARED uint8_t addConnectionStateCallback(Sensor* ptr, void(*callback)(Sensor* ptr, SensorState state, void* userData), SensorStateListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeConnectionStateCallback(SensorStateListenerHandle handle);
 
