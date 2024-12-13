@@ -20,13 +20,19 @@
 #ifndef SENSOR_CHANNEL_NAME_LEN
 #define SENSOR_CHANNEL_NAME_LEN 8
 #endif // !SENSOR_CHANNEL_NAME_LEN
+#ifndef NEURO_EEG_MAX_CH_COUNT
+#define NEURO_EEG_MAX_CH_COUNT 24
+#endif // !NEURO_EEG_MAX_CH_COUNT
+
+#ifndef FILE_NAME_MAX_LEN
+#define FILE_NAME_MAX_LEN 64
+#endif // !FILE_NAME_MAX_LEN
 
 
 
 #ifndef BRAINBIT2_MAX_CH_COUNT
 #define BRAINBIT2_MAX_CH_COUNT 8
 #endif // !BRAINBIT2_MAX_CH_COUNT
-
 
 
 typedef struct _OpStatus
@@ -43,9 +49,11 @@ enum SensorFamily : uint8_t
 	SensorLEKolibri = 2,
 	SensorLEBrainBit = 3,
 	SensorLEBrainBitBlack = 4,
+	SensorLENeuroEEG = 14,
 	SensorLEBrainBit2 = 18,
 	SensorLEBrainBitPro = 19,
 	SensorLEBrainBitFlex = 20,
+
 
 };
 
@@ -83,7 +91,8 @@ enum SensorFeature : int8_t
 	FeatureEnvelope,
 	FeaturePhotoStimulator,
 	FeatureAcousticStimulator,
-	FeatureFlashCard
+	FeatureFlashCard,
+	FeatureLedChannels
 };
 
 enum SensorFirmwareMode : int8_t {
@@ -180,7 +189,9 @@ enum SensorParameter : int8_t {
 	ParameterPhotoStimTimeDefer,
 	ParameterPhotoStimSyncState,
 	ParameterSensorPhotoStim,
-	ParameterPhotoStimMode
+	ParameterStimMode,
+	ParameterLedChannels,
+	ParameterLedState
 };
 
 enum SensorParamAccess : int8_t {
@@ -200,7 +211,7 @@ enum SensorState : int8_t {
 	StateOutOfRange
 };
 
-enum SensorSamplingFrequency : int8_t {
+enum SensorSamplingFrequency : uint8_t {
 	FrequencyHz10,
 	FrequencyHz20,
 	FrequencyHz100,
@@ -218,7 +229,7 @@ enum SensorSamplingFrequency : int8_t {
 	FrequencyHz32000,
 	FrequencyHz48000,
 	FrequencyHz64000,
-	FrequencyUnsupported
+	FrequencyUnsupported = 0xFF
 };
 
 enum SensorGain : int8_t {
@@ -432,7 +443,13 @@ enum EEGChannelId : uint8_t
 	EEGChIdCZ,
 	EEGChIdFZ,
 	EEGChIdFpZ,
-	EEGChIdD3
+	EEGChIdD3,
+
+	EEGChIdRef,
+	EEGChIdA1,
+	EEGChIdA2,
+	EEGChIdGnd1,
+	EEGChIdGnd2
 };
 
 typedef struct _EEGChannelInfo
@@ -468,6 +485,89 @@ typedef struct _ResistRefChannelsData {
 } ResistRefChannelsData;
 
 
+enum EEGRefMode : uint8_t
+{
+	RefHeadTop = 1,
+	RefA1A2
+};
+
+typedef struct _NeuroEEGAmplifierParam {
+	uint8_t ReferentResistMesureAllow;
+	SensorSamplingFrequency Frequency;
+	EEGRefMode ReferentMode;
+	EEGChannelMode ChannelMode[NEURO_EEG_MAX_CH_COUNT];
+	SensorGain ChannelGain[NEURO_EEG_MAX_CH_COUNT];
+	uint8_t RespirationOn;
+} NeuroEEGAmplifierParam;
+
+typedef struct _ResistChannelsData {
+	uint32_t PackNum;
+	double A1;
+	double A2;
+	double Bias;
+	uint32_t SzValues;
+	double* Values;
+} ResistChannelsData;
+
+typedef void* NeuroEEGSignalDataListenerHandle;
+typedef void* NeuroEEGResistDataListenerHandle;
+typedef void* NeuroEEGSignalResistDataListenerHandle;
+typedef void* NeuroEEGSignalRawDataListenerHandle;
+typedef void* NeuroEEGFileStreamDataListenerHandle;
+typedef void* NeuroEEGSignalProcessParam;
+
+enum SensorFSStatus : uint8_t
+{
+	FSStatusOK,
+	FSStatusNoInit,
+	FSStatusNoDisk,
+	FSStatusProtect
+};
+
+enum SensorFSIOStatus : uint8_t
+{
+	FSIOStatusNoError,
+	FSIOStatusIOError,
+	FSIOStatusTimeout
+};
+
+enum SensorFSStreamStatus : uint8_t
+{
+	FSStreamStatusClosed,
+	FSStreamStatusWrite,
+	FSStreamStatusRead
+};
+
+typedef struct _NeuroEEGFSStatus {
+	SensorFSStatus Status;
+	SensorFSIOStatus IOStatus;
+	SensorFSStreamStatus StreamStatus;
+	uint8_t AutosaveSignal;
+} NeuroEEGFSStatus;
+
+typedef struct _SensorFileInfo {
+	char FileName[FILE_NAME_MAX_LEN];
+	uint32_t FileSize;
+	uint16_t ModifiedYear;
+	uint8_t ModifiedMonth;
+	uint8_t ModifiedDayOfMonth;
+	uint8_t ModifiedHour;
+	uint8_t ModifiedMin;
+	uint8_t ModifiedSec;
+	uint8_t Attribute;
+} SensorFileInfo;
+
+typedef struct _SensorFileData {
+	uint32_t OffsetStart;
+	uint32_t DataAmount;
+	uint32_t SzData;
+	uint8_t* Data;
+} SensorFileData;
+
+typedef struct _SensorDiskInfo {
+	uint64_t TotalSize;
+	uint64_t FreeSize;
+} SensorDiskInfo;
 
 
 
@@ -602,6 +702,42 @@ typedef	struct _BrainBit2AmplifierParam {
 
 typedef void* BrainBit2SignalDataListenerHandle;
 typedef void* BrainBit2ResistDataListenerHandle;
+
+typedef struct _StimulPhase
+{
+	// Stimulation frequency
+	double Frequency;
+	// Stimulus power 0...100 %
+	double Power;
+	// Duration of a single stimulation pulse
+	double Pulse;
+	// Stimulation phase duration
+	double StimulDuration;
+	// Duration of pause after the stimulation phase
+	double Pause;
+	// Filling frequency of the signal for acoustic stimulation
+	double FillingFrequency;
+} StimulPhase;
+
+enum SensorStimulMode : uint8_t
+{
+	StimulModeInvalid = 0,
+	StimulModeStopped,
+	StimulModePendingSync,
+	StimulModeSynchronized,
+	StimulModeStimProgrammRuning,
+	StimulModeError
+};
+
+typedef void* StimulModeListenerHandle;
+
+enum SensorStimulSyncState : uint8_t
+{
+	StimulSyncNormal = 0,
+	StimulSyncTimeOut
+};
+
+typedef void* PhotoStimulSyncStateListenerHandle;
 
 
 

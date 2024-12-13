@@ -114,6 +114,46 @@ extern "C"
 	SDK_SHARED uint8_t addAmpModeCallback(Sensor* ptr, void(*callback)(Sensor* ptr, SensorAmpMode mode, void* userData), AmpModeListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeAmpModeCallback(AmpModeListenerHandle handle);
 
+	SDK_SHARED uint8_t readSupportedChannelsNeuroEEG(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szChannelsInOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readFilesystemStatusNeuroEEG(Sensor* ptr, NeuroEEGFSStatus* filesystemStatusOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readFileSystemDiskInfoNeuroEEG(Sensor* ptr, SensorDiskInfo* diskInfoOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readFileInfoNeuroEEG(Sensor* ptr, const char* fileName, SensorFileInfo* fileInfoOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readFileInfoAllNeuroEEG(Sensor* ptr, SensorFileInfo* filesInfoOut, uint32_t* szFilesInfoOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeFileNeuroEEG(Sensor* ptr, const char* fileName, uint8_t* data, uint32_t szData, uint32_t offsetStart, OpStatus* outStatus);
+	SDK_SHARED uint8_t readFileNeuroEEG(Sensor* ptr, const char* fileName, uint8_t* data, uint32_t* szDataInOut, uint32_t offsetStart, OpStatus* outStatus);
+	SDK_SHARED uint8_t deleteFileNeuroEEG(Sensor* ptr, const char* fileName, OpStatus* outStatus);
+	SDK_SHARED uint8_t deleteAllFilesNeuroEEG(Sensor* ptr, const char* fileExt, OpStatus* outStatus);
+	SDK_SHARED uint8_t readFileCRC32NeuroEEG(Sensor* ptr, const char* fileName, uint32_t totalSize, uint32_t offsetStart, uint32_t* crc32Out, OpStatus* outStatus);
+	SDK_SHARED uint8_t fileStreamAutosaveNeuroEEG(Sensor* ptr, const char* fileName, OpStatus* outStatus);
+	SDK_SHARED uint8_t fileStreamReadNeuroEEG(Sensor* ptr, const char* fileName, uint32_t totalSize, uint32_t offsetStart, OpStatus* outStatus);
+	SDK_SHARED Sensor* readPhotoStimNeuroEEG(Sensor* ptr);
+	SDK_SHARED uint8_t writePhotoStimNeuroEEG(Sensor* ptr, Sensor* ptrPhotoStim, OpStatus* outStatus);
+
+	SDK_SHARED uint8_t addFileStreamReadCallbackNeuroEEG(Sensor* ptr, void(*callback)(Sensor* ptr, SensorFileData* data, int32_t szData, void* userData), NeuroEEGFileStreamDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeFileStreamReadCallbackNeuroEEG(NeuroEEGFileStreamDataListenerHandle handle);
+
+	SDK_SHARED uint8_t createSignalProcessParamNeuroEEG(NeuroEEGAmplifierParam ampParam, NeuroEEGSignalProcessParam* paramOut, OpStatus* outStatus);
+	SDK_SHARED void removeSignalProcessParamNeuroEEG(NeuroEEGSignalProcessParam param);
+	// signalOut.Samples and resistOut.Values - Required created manual! Actual size signalOut.SzSamples and resistOut.SzValues required set! Recommended channel size - NEURO_EEG_MAX_CH_COUNT. signalOut.SzSamples and resistOut.SzValues after invoke automatically updated
+	SDK_SHARED uint8_t parseRawSignalNeuroEEG(uint8_t* data, uint32_t* szDataInOut, NeuroEEGSignalProcessParam processParam, SignalChannelsData* signalOut, uint32_t* szSignalInOut, ResistChannelsData* resistOut, uint32_t* szResistInOut, OpStatus* outStatus);
+
+	SDK_SHARED uint8_t readSurveyIdNeuroEEG(Sensor* ptr, uint32_t* surveyIdOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeSurveyIdNeuroEEG(Sensor* ptr, uint32_t surveyId, OpStatus* outStatus);
+	SDK_SHARED uint8_t readAmplifierParamNeuroEEG(Sensor* ptr, NeuroEEGAmplifierParam* ampParamOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeAmplifierParamNeuroEEG(Sensor* ptr, NeuroEEGAmplifierParam ampParam, OpStatus* outStatus);
+	SDK_SHARED void calcCRC32(uint8_t* data, uint32_t szData, uint32_t* crc32Out);
+
+	SDK_SHARED uint8_t addSignalCallbackNeuroEEG(Sensor* ptr, void(*callback)(Sensor* ptr, SignalChannelsData* data, int32_t szData, void* userData), NeuroEEGSignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalCallbackNeuroEEG(NeuroEEGSignalDataListenerHandle handle);
+	SDK_SHARED uint8_t addResistCallbackNeuroEEG(Sensor* ptr, void(*callback)(Sensor* ptr, ResistChannelsData* data, int32_t szData, void* userData), NeuroEEGResistDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeResistCallbackNeuroEEG(NeuroEEGResistDataListenerHandle handle);
+	SDK_SHARED uint8_t addSignalResistCallbackNeuroEEG(Sensor* ptr, void(*callback)(Sensor* ptr, SignalChannelsData* signalData, int32_t szSignalData, ResistChannelsData* resistData, int32_t szResistData, void* userData), NeuroEEGSignalResistDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalResistCallbackNeuroEEG(NeuroEEGSignalResistDataListenerHandle handle);
+	SDK_SHARED uint8_t addSignalRawCallbackNeuroEEG(Sensor* ptr, void(*callback)(Sensor* ptr, uint8_t* data, int32_t szData, void* userData), NeuroEEGSignalRawDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalRawCallbackNeuroEEG(NeuroEEGSignalRawDataListenerHandle handle);
+
+	SDK_SHARED uint8_t readSupportedEEGChannels(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szchannelsInOut, OpStatus* outStatus);
+
 	SDK_SHARED uint8_t readSupportedChannelsBrainBit2(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szchannelsInOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t addSignalCallbackBrainBit2(Sensor* ptr, void(*callback)(Sensor* ptr, SignalChannelsData* data, int32_t szData, void* userData), BrainBit2SignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeSignalCallbackBrainBit2(BrainBit2SignalDataListenerHandle handle);
@@ -121,6 +161,21 @@ extern "C"
 	SDK_SHARED void removeResistCallbackBrainBit2(BrainBit2ResistDataListenerHandle handle);
 	SDK_SHARED uint8_t readAmplifierParamBrainBit2(Sensor* ptr, BrainBit2AmplifierParam* ampParamOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t writeAmplifierParamBrainBit2(Sensor* ptr, BrainBit2AmplifierParam ampParam, OpStatus* outStatus);
+
+	SDK_SHARED int32_t getMaxStimulPhasesCountSensor(Sensor* ptr);
+	SDK_SHARED uint8_t readStimMode(Sensor* ptr, SensorStimulMode* mode, OpStatus* outStatus);
+	SDK_SHARED uint8_t readStimPrograms(Sensor* ptr, StimulPhase* stimProgramsOut, int32_t* szStimProgramsInOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeStimPrograms(Sensor* ptr, StimulPhase* stimPrograms, int32_t szStimPrograms, OpStatus* outStatus);
+
+	SDK_SHARED uint8_t addStimModeCallback(Sensor* ptr, void(*callback)(Sensor* ptr, SensorStimulMode mode, void* userData), StimulModeListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeStimModeCallback(StimulModeListenerHandle handle);
+
+	SDK_SHARED uint8_t readPhotoStimSyncState(Sensor* ptr, SensorStimulSyncState* state, OpStatus* outStatus);
+	SDK_SHARED uint8_t readPhotoStimTimeDefer(Sensor* ptr, double* timeOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writePhotoStimTimeDefer(Sensor* ptr, double time, OpStatus* outStatus);
+
+	SDK_SHARED uint8_t addPhotoStimSyncStateCallback(Sensor* ptr, void(*callback)(Sensor* ptr, SensorStimulSyncState state, void* userData), PhotoStimulSyncStateListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removePhotoStimSyncStateCallback(PhotoStimulSyncStateListenerHandle handle);
 
 
 	SDK_SHARED uint8_t addBatteryCallback(Sensor* ptr, void(*callback)(Sensor* ptr, int32_t battPower, void* userData), BattPowerListenerHandle* handleOut, void* userData, OpStatus* outStatus);
@@ -142,13 +197,6 @@ extern "C"
 
 	SDK_SHARED uint8_t addMEMSDataCallback(Sensor* ptr, void(*callback)(Sensor* ptr, MEMSData* data, int32_t szData, void* userData), MEMSDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeMEMSDataCallback(MEMSDataListenerHandle handle);
-	SDK_SHARED uint8_t readSamplingFrequencyFPGSensor(Sensor* ptr, SensorSamplingFrequency* samplingFrequencyOut, OpStatus* outStatus);
-	SDK_SHARED uint8_t readIrAmplitudeFPGSensor(Sensor* ptr, IrAmplitude* amplitudeOut, OpStatus* outStatus);
-	SDK_SHARED uint8_t writeIrAmplitudeFPGSensor(Sensor* ptr, IrAmplitude amplitude, OpStatus* outStatus);
-	SDK_SHARED uint8_t readRedAmplitudeFPGSensor(Sensor* ptr, RedAmplitude* amplitudeOut, OpStatus* outStatus);
-	SDK_SHARED uint8_t writeRedAmplitudeFPGSensor(Sensor* ptr, RedAmplitude amplitude, OpStatus* outStatus);
-	SDK_SHARED uint8_t addFPGDataCallback(Sensor* ptr, void(*callback)(Sensor* ptr, FPGData* data, int32_t szData, void* userData), FPGDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
-	SDK_SHARED void removeFPGDataCallback(FPGDataListenerHandle handle);
 
 
 #ifdef __cplusplus

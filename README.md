@@ -2,7 +2,7 @@
 
 ## Overview
 
-Neurosdk is a powerful tool for working with neuro-sensors BrainBit, BrainBitBlack, Callibri and Kolibri. All these devices work with BLE 4.0+ technology. SDK allows you to connect, read the parameters of devices, as well as receive signals of various types from the selected device. 
+Neurosdk is a powerful tool for working with neuro-sensors BrainBit, BrainBit2, BrainBitBlack, DragonEEG, Callibri and Kolibri. All these devices work with BLE 4.0+ technology. SDK allows you to connect, read the parameters of devices, as well as receive signals of various types from the selected device. 
 
 ## Getting Started
 
@@ -66,7 +66,9 @@ When creating a scanner, you need to specify the type of device to search. It ca
 ```cpp
 SensorFamily filter[] = {
 			    SensorFamily::SensorLEBrainBit,
+          SensorFamily::SensorLEBrainBit2,
 			    SensorFamily::SensorLECallibri,
+          SensorFamily::SensorLENeuroEEG,
 		    };
 OpStatus st;
 auto scanner = createScanner(filter, sizeof(filter), &st);
@@ -1004,4 +1006,216 @@ callibriMotionAssistantParams.GyroStart = CallibriMotionAssistantLimb::MALimbRig
 callibriMotionAssistantParams.GyroStart = 10;
 writeMotionAssistantParamCallibri(sensor, callibriMotionAssistantParams, &outStatus);
 execCommandSensor(sensor, SensorCommand::CommandStartCurrentStimulation, &outStatus);
+```
+
+### DragonEEG
+
+NeuroEEG-M requires pairing with a PC/mobile device. So, before connecting to device, you must put it into pairing mode. SDK starts the pairing process automatically.
+
+Allows for long-term monitoring of brain biopotentials through 21 channels, with parallel registration of three polygraphic channels: ECG, EMG and EOG.
+
+NeuroEEG-M device supports the next signal frequencies:
+ - 1000 Hz
+ - 500 Hz
+ - 250 Hz
+
+And gain values:
+ - 1
+ - 2
+ - 4
+ - 6
+ - 8
+ - 12
+ - 24
+
+#### Info about channels
+
+NeuroEEG device has 24 channels. You can get channels count by `channels_count` property. Get channels count:
+
+```cpp
+int32_t chCount = getChannelsCountSensor(sensor);
+```
+
+Receive supported channels info:
+
+```cpp
+EEGChannelInfo channelInfs[NEURO_EEG_MAX_CH_COUNT];
+int32_t chCnt = NEURO_EEG_MAX_CH_COUNT;
+OpStatus st;
+readSupportedChannelsNeuroEEG(sensor, channelInfs, &chCnt, &st);
+```
+
+`EEGChannelInfo` contains some info:
+ - Id - `EEGChannelId` type - physical location of the channel. Possible values:
+  - O1 
+  - P3 
+  - C3 
+  - F3 
+  - Fp1
+  - T5 
+  - T3 
+  - F7 
+  - F8 
+  - T4 
+  - T6 
+  - Fp2
+  - F4 
+  - C4 
+  - P4 
+  - O2 
+  - D1 
+  - D2 
+  - OZ 
+  - PZ 
+  - CZ 
+  - FZ 
+  - FpZ
+  - D3 
+ - ChType - `EEGChannelType` type - type of channel, possible values A1, A2, differential or referent
+ - Name - `char[SENSOR_CHANNEL_NAME_LEN]` type - channel name
+ - Num - `uint8_t` type - channel number. By this number the channel will be located in the array of signal or resistance values
+
+#### AmpMode
+
+This device can show it's current amplifier mode. It can be in the following states:
+
+  - Invalid
+  - PowerDown
+  - Idle
+  - Signal
+  - Resist
+  - SignalResist
+  - Envelope
+
+You can check amp. mode by two ways:
+
+1. by callback:
+
+```cpp
+void ampModeStateChanged(Sensor* ptr, SensorAmpMode mode, void* userData)
+{
+	// check AmpMode
+}
+...
+AmpModeListenerHandle ampModeHandle = nullptr;
+OpStatus st;
+addAmpModeCallback(sensor, ampModeStateChanged, &ampModeHandle, nullptr, &st);
+...
+removeAmpModeCallback(ampModeHandle);
+```
+
+2. get value at any time:
+
+```cpp
+SensorAmpMode ampMode;
+OpStatus st;
+readAmpMode(sensor, &ampMode, &st);
+```
+
+It is very important parameter for NeuroEEG-M device because you can set amplifier parameters only if device into `PowerDown` or `Idle` mode.
+
+#### Amplifier params
+
+After connecting the device, it is absolutely necessary to configure the parameters of the amplifier. Before setting parameters, check that the device is not in signal or resistance detection mode, otherwise calling the method will cause an error. If this is not done, the signal and resistance values will be 0.0 or will not appear at all.
+
+```cpp
+OpStatus st;
+NeuroEEGAmplifierParam ampParam;
+ampParam.ReferentResistMesureAllow = 1;
+ampParam.Frequency = SensorSamplingFrequency::FrequencyHz500;
+ampParam.ReferentMode = EEGRefMode::RefA1A2;
+for (auto i = 0; i < NEURO_EEG_MAX_CH_COUNT; ++i) {
+    ampParam.ChannelMode[i] = EEGChannelMode::EEGChModeSignalResist;
+    ampParam.ChannelGain[i] = SensorGain::SensorGain6;
+}
+writeAmplifierParamNeuroEEG(sensor, ampParam, &st);
+```
+
+Channel modes:
+ - SignalResist - device will be sent signal and resist values simultaneously
+ - Signal - device will be sent only signal values, channel resistance will not be measured even if the resistance measurement mode is started in the device
+ - Shorted - channel is shorted to ground, this mode can be used to analyze intrinsic noise of the device
+ - Test - this channel will receive a test signal
+ - Off - channel is disabled, no data from it
+
+Referent modes:
+ - A1A2 - both A1 and A2 references are available
+ - HeadTop - only one reference is available, the resistance data is placed in field A1
+
+ReferentResistMesureAllow - flag, allows resistance measurement by references (if true, the signal is not valid)
+
+#### Receiving signal
+
+To receive signal data, you need to subscribe to the corresponding callback. The values come in volts. In order for the device to start transmitting data, you need to start a signal using the `execute` command. This method is also recommended to be run in an separate thread.
+
+The sampling rate can be controlled using the `Frequency` value of amplifier parameters. For example, at a frequency of 1000 Hz, the device will send about 1000 samples per second. Supports frequencies 250/500/1000 Hz. You can also adjust signal power (`Gain`) value for each channel.
+
+```cpp
+void signalNeuroEEGCallback(Sensor* ptr, SignalChannelsData* data, int32_t szData, void* userData)
+{
+  
+}
+
+OpStatus st;
+NeuroEEGSignalDataListenerHandle signalHandle = nullptr;
+addSignalCallbackNeuroEEG(sensor, signalNeuroEEGCallback, &signalHandle, nullptr, &st)
+execCommandSensor(sensor, SensorCommand::CommandStartSignal, &st)
+...
+execCommandSensor(sensor, SensorCommand::CommandStopSignal, &st);
+removeSignalCallbackNeuroEEG(signalHandle);
+```
+
+You get signal values as a list of samples, each containing:
+ - PackNum - number for each packet
+ - Marker - marker of sample
+ - Samples - array of samples in V. Each sample number into array consistent with `Num` value of `EEGChannelInfo` from `supported_channels` property.
+ - SzSamples - size of samples array
+
+#### Receiving resistance
+
+NeuroEEG also allow you to get resistance values. With their help, you can determine the quality of the electrodes to the skin. Initial resistance values are infinity. The values change when the device is on the head.
+
+```cpp
+void resistNeuroEEGCallback(Sensor* ptr, ResistChannelsData* data, int32_t szData, void* userData)
+{
+  
+}
+
+OpStatus st;
+NeuroEEGResistDataListenerHandle resistHandle = nullptr;
+addResistCallbackNeuroEEG(sensor, resistNeuroEEGCallback, &resistHandle, nullptr, &st);
+execCommandSensor(sensor, SensorCommand::CommandStartResist, &st);
+...
+execCommandSensor(sensor, SensorCommand::CommandStopResist, &st);
+removeResistCallbackNeuroEEG(resistHandle);
+```
+
+You get resistance values structure of samples for each channel:
+ - PackNum - number for each packet
+ - A1 - value of A1 channel in Ohm
+ - A2 - value of A2 channel in Ohm
+ - Bias - value of Bias channel in Ohm
+ - Values - array of values in Ohm. Each sample number into array consistent with `Num` value of `EEGChannelInfo` from `getSupportedChannels()` method.
+ - SzValues - size of samples array
+
+#### Receiving signal and resistance
+
+This device supports capturing signal and resistance at the same time. 
+
+> NOTE:
+> In this mode resistData may not arrive every update of the SignalResistReceived callback.
+
+```cpp
+void signalResistNeuroEEGCallback(Sensor* ptr, SignalChannelsData* signalData, int32_t szSignalData, ResistChannelsData* resistData, int32_t szResistData, void* userData)
+{
+  
+}
+
+OpStatus st;
+NeuroEEGSignalResistDataListenerHandle signalResistHandle = nullptr;
+addSignalResistCallbackNeuroEEG(sensor, signalResistNeuroEEGCallback, &signalResistHandle, nullptr, &st);
+execCommandSensor(sensor, SensorCommand::CommandStartSignalAndResist, &st);
+...
+execCommandSensor(sensor, SensorCommand::CommandStopSignalAndResist, &st);
+removeSignalResistCallbackNeuroEEG(signalResistHandle);
 ```
