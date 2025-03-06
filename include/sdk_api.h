@@ -24,7 +24,7 @@ extern "C"
 	SDK_SHARED uint8_t disconnectSensor(Sensor* ptr, OpStatus* outStatus);
 
 	SDK_SHARED int32_t getFeaturesCountSensor(Sensor* ptr);
-	SDK_SHARED uint8_t getFeaturesSensor(Sensor* ptr, SensorFeature* sensorFeatures, int32_t* szSensorFeatureInOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t getFeaturesSensor(Sensor* ptr, SensorFeature* sensorFeatures, int32_t* szSensorFeaturesInOut, OpStatus* outStatus);
 	SDK_SHARED int8_t isSupportedFeatureSensor(Sensor* ptr, SensorFeature sensorFeature);
 
 	SDK_SHARED int32_t getCommandsCountSensor(Sensor* ptr);
@@ -108,11 +108,29 @@ extern "C"
 	SDK_SHARED uint8_t addFPGDataCallback(Sensor* ptr, void(*callback)(Sensor* ptr, FPGData* data, int32_t szData, void* userData), FPGDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeFPGDataCallback(FPGDataListenerHandle handle);
 	SDK_SHARED uint8_t readSamplingFrequencyResistSensor(Sensor* ptr, SensorSamplingFrequency* samplingFrequencyOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readAmplifierParamHeadphones(Sensor* ptr, HeadphonesAmplifierParam* ampParamOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeAmplifierParamHeadphones(Sensor* ptr, HeadphonesAmplifierParam ampParam, OpStatus* outStatus);
+
+	SDK_SHARED uint8_t addResistCallbackHeadphones(Sensor* ptr, void(*callback)(Sensor* ptr, HeadphonesResistData* data, int32_t szData, void* userData), HeadphonesResistDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeResistCallbackHeadphones(HeadphonesResistDataListenerHandle handle);
+	SDK_SHARED uint8_t addSignalDataCallbackHeadphones(Sensor* ptr, void(*callback)(Sensor* ptr, HeadphonesSignalData* data, int32_t szData, void* userData), HeadphonesSignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalDataCallbackHeadphones(HeadphonesSignalDataListenerHandle handle);
+	SDK_SHARED uint8_t readAmplifierParamHeadphones2(Sensor* ptr, Headphones2AmplifierParam* ampParamOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeAmplifierParamHeadphones2(Sensor* ptr, Headphones2AmplifierParam ampParam, OpStatus* outStatus);
+
+	SDK_SHARED uint8_t addResistCallbackHeadphones2(Sensor* ptr, void(*callback)(Sensor* ptr, Headphones2ResistData* data, int32_t szData, void* userData), Headphones2ResistDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeResistCallbackHeadphones2(Headphones2ResistDataListenerHandle handle);
+	SDK_SHARED uint8_t addSignalDataCallbackHeadphones2(Sensor* ptr, void(*callback)(Sensor* ptr, Headphones2SignalData* data, int32_t szData, void* userData), Headphones2SignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalDataCallbackHeadphones2(Headphones2SignalDataListenerHandle handle);
 	SDK_SHARED uint8_t pingNeuroSmart(Sensor* ptr, uint8_t marker, OpStatus* outStatus);
 	SDK_SHARED uint8_t readAmpMode(Sensor* ptr, SensorAmpMode* modeOut, OpStatus* outStatus);
 
 	SDK_SHARED uint8_t addAmpModeCallback(Sensor* ptr, void(*callback)(Sensor* ptr, SensorAmpMode mode, void* userData), AmpModeListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeAmpModeCallback(AmpModeListenerHandle handle);
+	SDK_SHARED uint8_t addResistCallbackHeadband(Sensor* ptr, void(*callback)(Sensor* ptr, HeadbandResistData data, void* userData), HeadbandResistDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeResistCallbackHeadband(HeadbandResistDataListenerHandle handle);
+	SDK_SHARED uint8_t addSignalDataCallbackHeadband(Sensor* ptr, void(*callback)(Sensor* ptr, HeadbandSignalData* data, int32_t szData, void* userData), HeadbandSignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
+	SDK_SHARED void removeSignalDataCallbackHeadband(HeadbandSignalDataListenerHandle handle);
 
 	SDK_SHARED uint8_t readSupportedChannelsNeuroEEG(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szChannelsInOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t readFilesystemStatusNeuroEEG(Sensor* ptr, NeuroEEGFSStatus* filesystemStatusOut, OpStatus* outStatus);
@@ -153,6 +171,8 @@ extern "C"
 	SDK_SHARED void removeSignalRawCallbackNeuroEEG(NeuroEEGSignalRawDataListenerHandle handle);
 
 	SDK_SHARED uint8_t readSupportedEEGChannels(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szchannelsInOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t readAmplifierParamSmartBand(Sensor* ptr, SmartBandAmplifierParam* ampParamOut, OpStatus* outStatus);
+	SDK_SHARED uint8_t writeAmplifierParamSmartBand(Sensor* ptr, SmartBandAmplifierParam ampParam, OpStatus* outStatus);
 
 	SDK_SHARED uint8_t readSupportedChannelsBrainBit2(Sensor* ptr, EEGChannelInfo* channelsOut, int32_t* szchannelsInOut, OpStatus* outStatus);
 	SDK_SHARED uint8_t addSignalCallbackBrainBit2(Sensor* ptr, void(*callback)(Sensor* ptr, SignalChannelsData* data, int32_t szData, void* userData), BrainBit2SignalDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
@@ -198,7 +218,8 @@ extern "C"
 	SDK_SHARED uint8_t addMEMSDataCallback(Sensor* ptr, void(*callback)(Sensor* ptr, MEMSData* data, int32_t szData, void* userData), MEMSDataListenerHandle* handleOut, void* userData, OpStatus* outStatus);
 	SDK_SHARED void removeMEMSDataCallback(MEMSDataListenerHandle handle);
 
-
+	SDK_SHARED int32_t getPossibleFeaturesCountSensor(SensorFamily sensFamily, uint8_t model);
+	SDK_SHARED uint8_t getPossibleFeaturesSensor(SensorFamily sensFamily, uint8_t model, SensorFeature* sensorFeatures, int32_t* szSensorFeaturesInOut, OpStatus* outStatus);
 #ifdef __cplusplus
 }
 #endif

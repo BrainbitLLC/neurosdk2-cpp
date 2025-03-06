@@ -30,6 +30,10 @@
 
 
 
+#ifndef SMART_BAND_MAX_CH_COUNT
+#define SMART_BAND_MAX_CH_COUNT 4
+#endif // !SMART_BAND_MAX_CH_COUNT
+
 #ifndef BRAINBIT2_MAX_CH_COUNT
 #define BRAINBIT2_MAX_CH_COUNT 8
 #endif // !BRAINBIT2_MAX_CH_COUNT
@@ -49,12 +53,14 @@ enum SensorFamily : uint8_t
 	SensorLEKolibri = 2,
 	SensorLEBrainBit = 3,
 	SensorLEBrainBitBlack = 4,
+	SensorLEHeadPhones = 5,
+	SensorLEHeadPhones2 = 6,
+	SensorLEHeadband = 11,
 	SensorLENeuroEEG = 14,
 	SensorLEBrainBit2 = 18,
 	SensorLEBrainBitPro = 19,
 	SensorLEBrainBitFlex = 20,
-
-
+	SensorLEPhotoStim = 21,
 };
 
 typedef struct _SensorVersion {
@@ -92,7 +98,8 @@ enum SensorFeature : int8_t
 	FeaturePhotoStimulator,
 	FeatureAcousticStimulator,
 	FeatureFlashCard,
-	FeatureLedChannels
+	FeatureLedChannels,
+	FeatureSignalWithResist,
 };
 
 enum SensorFirmwareMode : int8_t {
@@ -315,6 +322,25 @@ typedef struct _BrainBitResistData {
 typedef void* BrainBitSignalDataListenerHandle;
 typedef void* BrainBitResistDataListenerHandle;
 
+typedef struct _HeadbandSignalData {
+	uint32_t PackNum;
+	uint8_t Marker;
+	double O1;
+	double O2;
+	double T3;
+	double T4;
+} HeadbandSignalData;
+
+typedef struct _HeadbandResistData {
+	uint32_t PackNum;
+	double O1;
+	double O2;
+	double T3;
+	double T4;
+} HeadbandResistData;
+
+typedef void* HeadbandSignalDataListenerHandle;
+typedef void* HeadbandResistDataListenerHandle;
 
 enum IrAmplitude : uint8_t {
 	IrAmp0 = 0,
@@ -351,7 +377,98 @@ enum GenCurrent : uint8_t {
 	Unsupported = 0xFF
 };
 
+typedef struct _HeadphonesSignalData {
+	uint32_t PackNum;
+	uint8_t Marker;
+	double Ch1;
+	double Ch2;
+	double Ch3;
+	double Ch4;
+	double Ch5;
+	double Ch6;
+	double Ch7;
+} HeadphonesSignalData;
 
+typedef struct _HeadphonesResistData {
+	uint32_t PackNum;
+	double Ch1;
+	double Ch2;
+	double Ch3;
+	double Ch4;
+	double Ch5;
+	double Ch6;
+	double Ch7;
+} HeadphonesResistData;
+
+typedef struct _HeadphonesAmplifierParam {
+	uint8_t ChSignalUse1;
+	uint8_t ChSignalUse2;
+	uint8_t ChSignalUse3;
+	uint8_t ChSignalUse4;
+	uint8_t ChSignalUse5;
+	uint8_t ChSignalUse6;
+	uint8_t ChSignalUse7;
+
+	uint8_t ChResistUse1;
+	uint8_t ChResistUse2;
+	uint8_t ChResistUse3;
+	uint8_t ChResistUse4;
+	uint8_t ChResistUse5;
+	uint8_t ChResistUse6;
+	uint8_t ChResistUse7;
+
+	SensorGain ChGain1;
+	SensorGain ChGain2;
+	SensorGain ChGain3;
+	SensorGain ChGain4;
+	SensorGain ChGain5;
+	SensorGain ChGain6;
+	SensorGain ChGain7;
+
+	GenCurrent Current;
+} HeadphonesAmplifierParam;
+
+typedef void* HeadphonesSignalDataListenerHandle;
+typedef void* HeadphonesResistDataListenerHandle;
+
+typedef struct _Headphones2SignalData {
+	uint32_t PackNum;
+	uint8_t Marker;
+	double Ch1;
+	double Ch2;
+	double Ch3;
+	double Ch4;
+} Headphones2SignalData;
+
+typedef struct _Headphones2ResistData {
+	uint32_t PackNum;
+	double Ch1;
+	double Ch2;
+	double Ch3;
+	double Ch4;
+} Headphones2ResistData;
+
+typedef struct _Headphones2AmplifierParam {
+	uint8_t ChSignalUse1;
+	uint8_t ChSignalUse2;
+	uint8_t ChSignalUse3;
+	uint8_t ChSignalUse4;
+
+	uint8_t ChResistUse1;
+	uint8_t ChResistUse2;
+	uint8_t ChResistUse3;
+	uint8_t ChResistUse4;
+
+	SensorGain ChGain1;
+	SensorGain ChGain2;
+	SensorGain ChGain3;
+	SensorGain ChGain4;
+
+	GenCurrent Current;
+} Headphones2AmplifierParam;
+
+typedef void* Headphones2SignalDataListenerHandle;
+typedef void* Headphones2ResistDataListenerHandle;
 
 enum SensorAmpMode : uint8_t
 {
@@ -689,6 +806,13 @@ typedef void* CallibriEnvelopeDataListenerHandle;
 typedef void* QuaternionDataListenerHandle;
 
 
+typedef	struct _SmartBandAmplifierParam {
+	uint8_t ChSignalUse[SMART_BAND_MAX_CH_COUNT];
+	uint8_t ChResistUse[SMART_BAND_MAX_CH_COUNT];
+	SensorGain ChGain[SMART_BAND_MAX_CH_COUNT];
+	GenCurrent Current;
+} SmartBandAmplifierParam;
+
 enum BrainBit2ChannelMode : int8_t {
 	ChModeShort,
 	ChModeNormal
@@ -738,6 +862,7 @@ enum SensorStimulSyncState : uint8_t
 };
 
 typedef void* PhotoStimulSyncStateListenerHandle;
+
 
 
 

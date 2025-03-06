@@ -2,7 +2,7 @@
 
 ## Overview
 
-Neurosdk is a powerful tool for working with neuro-sensors BrainBit, BrainBit2, BrainBitBlack, DragonEEG, Callibri and Kolibri. All these devices work with BLE 4.0+ technology. SDK allows you to connect, read the parameters of devices, as well as receive signals of various types from the selected device. 
+Neurosdk is a powerful tool for working with neuro-sensors BrainBit, BrainBit2, BrainBitBlack, DragonEEG, Headband and Headphones, Callibri and Kolibri. All these devices work with BLE 4.0+ technology. SDK allows you to connect, read the parameters of devices, as well as receive signals of various types from the selected device. 
 
 ## Getting Started
 
@@ -69,6 +69,8 @@ SensorFamily filter[] = {
           SensorFamily::SensorLEBrainBit2,
 			    SensorFamily::SensorLECallibri,
           SensorFamily::SensorLENeuroEEG,
+          SensorFamily::SensorLEHeadband,
+          SensorFamily::SensorLEHeadPhones2
 		    };
 OpStatus st;
 auto scanner = createScanner(filter, sizeof(filter), &st);
@@ -1008,13 +1010,13 @@ writeMotionAssistantParamCallibri(sensor, callibriMotionAssistantParams, &outSta
 execCommandSensor(sensor, SensorCommand::CommandStartCurrentStimulation, &outStatus);
 ```
 
-### DragonEEG
+### DragonEEG (NeuroEEG)
 
-NeuroEEG-M requires pairing with a PC/mobile device. So, before connecting to device, you must put it into pairing mode. SDK starts the pairing process automatically.
+DragonEEG requires pairing with a PC/mobile device. So, before connecting to device, you must put it into pairing mode. SDK starts the pairing process automatically.
 
 Allows for long-term monitoring of brain biopotentials through 21 channels, with parallel registration of three polygraphic channels: ECG, EMG and EOG.
 
-NeuroEEG-M device supports the next signal frequencies:
+DragonEEG device supports the next signal frequencies:
  - 1000 Hz
  - 500 Hz
  - 250 Hz
@@ -1030,7 +1032,7 @@ And gain values:
 
 #### Info about channels
 
-NeuroEEG device has 24 channels. You can get channels count by `channels_count` property. Get channels count:
+DragonEEG device has 24 channels. You can get channels count by `channels_count` property. Get channels count:
 
 ```cpp
 int32_t chCount = getChannelsCountSensor(sensor);
