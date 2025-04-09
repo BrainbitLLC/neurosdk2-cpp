@@ -1221,3 +1221,176 @@ execCommandSensor(sensor, SensorCommand::CommandStartSignalAndResist, &st);
 execCommandSensor(sensor, SensorCommand::CommandStopSignalAndResist, &st);
 removeSignalResistCallbackNeuroEEG(signalResistHandle);
 ```
+
+#### Flash drive operation
+
+##### Enable file system
+
+Before any operations with a flash drive, you should check if the flash drive operation mode is enabled, and if it is not enabled - enable it:
+
+```cpp
+OpStatus st;
+NeuroEEGFSStatus fsStatus;
+readFilesystemStatusNeuroEEG(sensor, &fsStatus, &st);
+
+if (fsStatus.Status != SensorFSStatus::FSStatusOK) {
+  execCommandSensor(sensor, SensorCommand::CommandFileSystemEnable, &st);
+}
+```
+
+##### Info about file system
+
+1. Read disk free space:
+
+```cpp
+OpStatus st;
+SensorDiskInfo diskInfo;
+readFileSystemDiskInfoNeuroEEG(sensor, &diskInfo, &st);
+```
+
+`SensorDiskInfo` contains two fields:
+
+- TotalSize - total disk space
+- FreeSize - free disk space
+
+2. read info about all files or one file by name:
+
+```cpp
+// read all file infos
+OpStatus st;
+SensorFileInfo fInfoLst[128];
+uint32_t fInfoLstSz = 128;
+readFileInfoAllNeuroEEG(sensor, fInfoLst, &fInfoLstSz, &st);
+
+// read file info by name
+OpStatus st;
+const char* fName = "my_file.txt";
+SensorFileInfo fInfo;
+readFileInfoNeuroEEG(sensor, fName, &fInfo, &st);
+```
+
+`SensorFileInfo` contains:
+- FileName - file name, max name length is 64
+- FileSize - file size in bytes
+- ModifiedYear, ModifiedMonth, ModifiedDayOfMonth, ModifiedHour, ModifiedMin, ModifiedSec - last modified date
+- Attribute - 
+
+> The month number is represented in the format 0-11, where january is 0 and december is 11
+
+##### File operations
+
+1. reading:
+
+```cpp
+OpStatus st;
+const char* fName = "my_file.txt";
+uint8_t data[fInfo.FileSize];
+uint32_t fileSizeRead = fInfo.FileSize; // read file info by readFileInfoNeuroEEG(...)
+readFileNeuroEEG(sensor, fName, data, &fileSizeRead, 0, &st);
+
+// then convert data to your format
+```
+
+2. writing:
+
+```cpp
+OpStatus st;
+const char* fName = "my_file.txt";
+std::string fileContent = "My long text";
+std::vector<uint8_t> dataContent{ fileContent.begin(), fileContent.end() };
+writeFileNeuroEEG(sensor, fName, dataContent.data(), static_cast<uint32_t>(dataContent.size()), 0, &st);
+```
+
+Reading and writing to files is done via byte arrays and specifying their size, so any structure should be converted to this format before writing, and converted back to the format you need when reading.
+
+> Note that the file name with the extension must not exceed 13 characters!
+
+3. removing:
+
+```cpp
+// remove one file by name
+
+OpStatus st;
+const char* fName = "my_file.txt";
+deleteFileNeuroEEG(sensor, fName, &st);
+
+// or remove all file matching extension
+
+deleteAllFilesNeuroEEG(sensor, "txt", &st);
+```
+
+##### Automatic survey recording
+
+This mode is intended for data recording in standalone mode - when the device is disconnected from the receiver. this mode is intended for data recording in standalone mode - when the device is disconnected from the receiver. Before using this mode, it is necessary to enable interaction with the file system in the device using the following method `execCommandSensor(sensor, SensorCommand::CommandFileSystemEnable, &st)`.
+
+You need to enable automatic writing to a file and specify a file name:
+
+```cpp
+OpStatus st;
+const char* fileSignalBin = "autosave.bin";
+fileStreamAutosaveNeuroEEG(sensor, fileSignalBin, &st)
+```
+
+After writing is complete, you can read and parse the contents of the file as follows:
+
+1. add a colback to read a portion of the data, since the survey file is quite large, and save all the received data into one object:
+
+```cpp
+void fileStreamNeuroEEGCallback(Sensor* ptr, SensorFileData* data, int32_t szData, void* userData)
+{
+
+}
+
+OpStatus st;
+NeuroEEGFileStreamDataListenerHandle fileStreamReadHandle = nullptr;
+addFileStreamReadCallbackNeuroEEG(sensor, fileStreamNeuroEEGCallback, &fileStreamReadHandle, nullptr, &st);
+```
+
+`SensorFileData` contains:
+- OffsetStart - the offset of this data portion from the beginning in bytes
+- DataAmount - total number of bytes remaining
+- SzData - size of readed bytes
+- Data - readed bytes
+
+Once the entire file has been read, it must be converted to signal and resistance data. To do this, you need to specify the amplifier parameters that were used when the file was recorded.
+
+```cpp
+OpStatus st;
+NeuroEEGSignalProcessParam processParam = nullptr;
+NeuroEEGAmplifierParam ampParam; // <- specify your params
+createSignalProcessParamNeuroEEG(ampParam, &processParam, &st);
+
+// converting data
+uint32_t offset = 0;
+const std::size_t arrSz = 16;
+SignalChannelsData signalData[arrSz]; // <- converted data will be written there
+ResistChannelsData resistData[arrSz]; // and there
+
+for (std::size_t i = 0; i < arrSz; ++i) {
+				signalData[i].SzSamples = NEURO_EEG_MAX_CH_COUNT;
+				signalData[i].Samples = new double[NEURO_EEG_MAX_CH_COUNT];
+				resistData[i].SzValues = NEURO_EEG_MAX_CH_COUNT;
+				resistData[i].Values = new double[NEURO_EEG_MAX_CH_COUNT];
+}
+
+while (st.Success && offset < _fsData.size()) {
+				uint32_t szSignal = arrSz;
+				uint32_t szResist = arrSz;
+				uint32_t szReady = 256; // <- you must specify the minimum packet size to process, this is 158 bytes. For simplicity, you can take 256 or more
+				for (std::size_t i = 0; i < arrSz; ++i) {
+								signalData[i].SzSamples = NEURO_EEG_MAX_CH_COUNT;
+								resistData[i].SzValues = NEURO_EEG_MAX_CH_COUNT;
+				}
+				parseRawSignalNeuroEEG(_fsData.data() + offset, &szReady, processParam, signalData, &szSignal, resistData, &szResist, &st);
+				if (szReady == 0) break;
+				offset += szReady;
+}
+
+for (std::size_t i = 0; i < arrSz; ++i) {
+				delete[] signalData[i].Samples;
+				delete[] resistData[i].Values;
+}
+removeSignalProcessParamNeuroEEG(processParam);
+```
+
+To speed up processing, you can also convert data while reading, but then be sure to watch the minimum size of the arrays.
